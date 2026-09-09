@@ -1,5 +1,6 @@
 #include <QtTest>
 
+#include <QFile>
 #include <QSqlError>
 #include <QSqlQuery>
 #include <QTemporaryDir>
@@ -18,6 +19,8 @@ private slots:
     void reportsAnErrorForAnUnwritablePath();
     void independentInstancesDoNotShareAConnection();
     void cascadesAnswerDeletionWhenARunIsDeleted();
+    void recoversFromACorruptFile();
+    void openOrRecoverLeavesAHealthyFileAlone();
 };
 
 void TestDatabase::migratesAnEmptyDatabaseToVersionOne()
@@ -156,6 +159,54 @@ void TestDatabase::cascadesAnswerDeletionWhenARunIsDeleted()
     QVERIFY(countAfter.exec());
     QVERIFY(countAfter.next());
     QCOMPARE(countAfter.value(0).toInt(), 0);
+}
+
+void TestDatabase::recoversFromACorruptFile()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString path = directory.filePath(QStringLiteral("trainer.db"));
+
+    // Not a SQLite file at all. SQLite opens it lazily, so the failure only
+    // surfaces when migrate() runs its first statement.
+    QFile broken(path);
+    QVERIFY(broken.open(QIODevice::WriteOnly));
+    broken.write(QByteArrayLiteral("this is not a database"));
+    broken.close();
+
+    store::Database database;
+    QString error;
+    QString recoveredFrom;
+    QVERIFY2(database.openOrRecover(path, &error, &recoveredFrom),
+             qPrintable(error));
+
+    // The broken file was moved aside, and a working database took its place.
+    QVERIFY(!recoveredFrom.isEmpty());
+    QVERIFY(QFile::exists(recoveredFrom));
+    QCOMPARE(database.schemaVersion(), store::Database::kCurrentSchemaVersion);
+}
+
+void TestDatabase::openOrRecoverLeavesAHealthyFileAlone()
+{
+    QTemporaryDir directory;
+    QVERIFY(directory.isValid());
+    const QString path = directory.filePath(QStringLiteral("trainer.db"));
+
+    {
+        store::Database first;
+        QString error;
+        QString recoveredFrom;
+        QVERIFY(first.openOrRecover(path, &error, &recoveredFrom));
+        QVERIFY(recoveredFrom.isEmpty());
+    }
+
+    store::Database second;
+    QString error;
+    QString recoveredFrom;
+    QVERIFY2(second.openOrRecover(path, &error, &recoveredFrom), qPrintable(error));
+    QVERIFY2(recoveredFrom.isEmpty(),
+             "a healthy database must not be moved aside");
+    QCOMPARE(second.schemaVersion(), 1);
 }
 
 QTEST_GUILESS_MAIN(TestDatabase)

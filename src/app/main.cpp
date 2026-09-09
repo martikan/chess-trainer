@@ -43,15 +43,17 @@ int main(int argc, char *argv[])
         QIcon::fromTheme(QStringLiteral("io.github.martikan.ChessTrainer")));
 
     // Storage failure must never block training, so an error here is carried
-    // into the UI as a message rather than aborting startup. Task 13 renders
-    // it; for now it only affects whether persistence works.
+    // into the UI as a message rather than aborting startup. A broken
+    // database file is moved aside and retried once before giving up.
     const QString dataDirectory =
         QStandardPaths::writableLocation(QStandardPaths::AppDataLocation);
     store::Database database;
     QString storageError;
-    const bool storageReady =
-        database.open(dataDirectory + QStringLiteral("/trainer.db"), &storageError)
-        && database.migrate(&storageError);
+    QString recoveredFrom;
+    const bool storageReady = database.openOrRecover(
+        dataDirectory + QStringLiteral("/trainer.db"),
+        &storageError,
+        &recoveredFrom);
 
     store::RunRepository repository(database);
     app::ModuleListModel moduleList(storageReady ? &repository : nullptr);
@@ -62,8 +64,16 @@ int main(int argc, char *argv[])
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
     engine.rootContext()->setContextProperty(QStringLiteral("storageReady"),
                                              storageReady);
-    engine.rootContext()->setContextProperty(QStringLiteral("storageError"),
-                                             storageError);
+    engine.rootContext()->setContextProperty(
+        QStringLiteral("storageMessage"),
+        storageReady
+            ? (recoveredFrom.isEmpty()
+                   ? QString()
+                   : i18n("Your statistics database could not be read and was "
+                          "moved to %1. A new one has been started.",
+                          recoveredFrom))
+            : i18n("Statistics cannot be saved: %1. Training still works.",
+                   storageError));
     engine.rootContext()->setContextProperty(QStringLiteral("moduleList"),
                                              &moduleList);
     engine.rootContext()->setContextProperty(QStringLiteral("squareColor"),

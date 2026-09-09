@@ -1,6 +1,7 @@
 #include "Database.h"
 
 #include <QDir>
+#include <QFile>
 #include <QFileInfo>
 #include <QSqlError>
 #include <QSqlQuery>
@@ -165,6 +166,71 @@ bool Database::applyVersion1(QString *errorOut)
     }
 
     return setSchemaVersion(1, errorOut);
+}
+
+QString Database::moveAside(const QString &path, QString *errorOut)
+{
+    QString target = path + QStringLiteral(".bak");
+    for (int suffix = 2; QFile::exists(target) && suffix < 100; ++suffix) {
+        target = path + QStringLiteral(".bak.%1").arg(suffix);
+    }
+
+    if (!QFile::rename(path, target)) {
+        if (errorOut) {
+            *errorOut = QStringLiteral("Cannot move %1 aside").arg(path);
+        }
+        return {};
+    }
+
+    return target;
+}
+
+bool Database::openOrRecover(const QString &path,
+                              QString *errorOut,
+                              QString *recoveredFromOut)
+{
+    if (recoveredFromOut) {
+        recoveredFromOut->clear();
+    }
+
+    QString firstError;
+    if (open(path, &firstError) && migrate(&firstError)) {
+        return true;
+    }
+
+    // An in-memory database has nothing to recover, and neither does a path
+    // that does not exist - in both cases the first failure is the real one.
+    if (path == QStringLiteral(":memory:") || !QFile::exists(path)) {
+        return fail(errorOut, firstError);
+    }
+
+    // Release the failed connection before touching the file.
+    if (QSqlDatabase::contains(m_connectionName)) {
+        {
+            QSqlDatabase database = QSqlDatabase::database(m_connectionName, false);
+            if (database.isOpen()) {
+                database.close();
+            }
+        }
+        QSqlDatabase::removeDatabase(m_connectionName);
+    }
+
+    QString moveError;
+    const QString backup = moveAside(path, &moveError);
+    if (backup.isEmpty()) {
+        return fail(errorOut,
+                    QStringLiteral("%1 (and %2)").arg(firstError, moveError));
+    }
+
+    QString retryError;
+    if (!open(path, &retryError) || !migrate(&retryError)) {
+        return fail(errorOut, retryError);
+    }
+
+    if (recoveredFromOut) {
+        *recoveredFromOut = backup;
+    }
+    return true;
 }
 
 } // namespace store

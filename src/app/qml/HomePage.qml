@@ -10,6 +10,17 @@ Kirigami.ScrollablePage {
 
     signal moduleRequested(string qmlPage)
 
+    header: Kirigami.InlineMessage {
+        width: parent.width
+        // Non-blocking by design: storage problems must never stand between
+        // the user and a round of training.
+        visible: storageMessage.length > 0
+        text: storageMessage
+        type: storageReady ? Kirigami.MessageType.Warning
+                           : Kirigami.MessageType.Error
+        showCloseButton: true
+    }
+
     Kirigami.CardsListView {
         id: cards
 

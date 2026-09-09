@@ -30,6 +30,18 @@ public:
     /// Applies every pending migration. Safe to call repeatedly.
     bool migrate(QString *errorOut);
 
+    /// Opens and migrates, and if that fails on an existing file, moves the
+    /// file aside and retries once with a fresh database. On success,
+    /// recoveredFromOut receives the backup path, or an empty string when no
+    /// recovery was needed.
+    bool openOrRecover(const QString &path,
+                       QString *errorOut,
+                       QString *recoveredFromOut);
+
+    /// Renames path to path + ".bak" (with a numeric suffix if that exists).
+    /// Returns the new path, or an empty string on failure.
+    static QString moveAside(const QString &path, QString *errorOut);
+
     /// Reads PRAGMA user_version. Zero means an empty, unmigrated database.
     int schemaVersion() const;
 
