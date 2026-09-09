@@ -1,5 +1,6 @@
 add_library(chesstrainer-store STATIC
     Database.cpp
+    RunRepository.cpp
 )
 
 target_include_directories(chesstrainer-store

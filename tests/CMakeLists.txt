@@ -16,6 +16,7 @@ endforeach()
 
 set(STORE_TESTS
     database
+    repository
 )
 
 foreach(test_name IN LISTS STORE_TESTS)
