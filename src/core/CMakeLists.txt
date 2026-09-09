@@ -1,6 +1,7 @@
 add_library(chesstrainer-core STATIC
     Square.cpp
     PromptGenerator.cpp
+    SquareColorRound.cpp
 )
 
 target_include_directories(chesstrainer-core

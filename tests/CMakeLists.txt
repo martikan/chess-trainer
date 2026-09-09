@@ -2,6 +2,7 @@
 set(CORE_TESTS
     square
     promptgenerator
+    round
 )
 
 foreach(test_name IN LISTS CORE_TESTS)
