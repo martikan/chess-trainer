@@ -59,6 +59,12 @@ public:
 
     /// Advances the state machine. Returns true only on the transition into
     /// Finished, so a repeating timer cannot fire the end handler twice.
+    ///
+    /// A round can also reach Finished through answer() alone, when an answer
+    /// arrives after the clock has expired but before the next tick(); that
+    /// transition is not reported here, since tick() only reports the one it
+    /// performs itself. A caller driving the round from a timer must also
+    /// check state() after each answer() call to catch that case.
     bool tick();
 
     /// Records an answer to the current prompt and advances to the next one.

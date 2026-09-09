@@ -15,10 +15,12 @@ using core::SquareColorRound;
 namespace {
 
 /// A round wired to a clock the test controls. Seed 42 is arbitrary but fixed,
-/// so prompts are reproducible.
+/// so prompts are reproducible. Relies on the constructor's default round
+/// length rather than repeating it, so every test using this fixture also
+/// exercises the default-parameter binding.
 struct Fixture {
     FakeClock clock;
-    SquareColorRound round{clock, PromptGenerator(42), 30'000ms};
+    SquareColorRound round{clock, PromptGenerator(42)};
 };
 
 /// Answers the current prompt correctly and returns the outcome.
@@ -35,6 +37,7 @@ class TestRound : public QObject
 
 private slots:
     void startsIdleAndBecomesRunning();
+    void constructedWithoutRoundLengthUsesTheDefault();
     void remainingCountsDownAndClampsAtZero();
     void tickFinishesTheRoundExactlyOnce();
     void correctAnswerScoresAndAdvancesThePrompt();
@@ -43,6 +46,8 @@ private slots:
     void answerAfterExpiryIsIgnoredAndRecordsNothing();
     void answerBeforeStartIsIgnored();
     void abortStopsTheRoundAndKeepsAnswers();
+    void abortBeforeStartIsANoOp();
+    void abortAfterFinishIsANoOp();
     void answersCarrySequentialOrdinals();
 };
 
@@ -57,16 +62,23 @@ void TestRound::startsIdleAndBecomesRunning()
     QCOMPARE(fixture.round.state(), RoundState::Running);
 }
 
+void TestRound::constructedWithoutRoundLengthUsesTheDefault()
+{
+    FakeClock clock;
+    SquareColorRound round{clock, PromptGenerator(42)};
+    QCOMPARE(round.roundLength(), SquareColorRound::kDefaultRoundLength);
+}
+
 void TestRound::remainingCountsDownAndClampsAtZero()
 {
     Fixture fixture;
-    QCOMPARE(fixture.round.remaining(), 30'000ms);
+    QCOMPARE(fixture.round.remaining(), SquareColorRound::kDefaultRoundLength);
 
     fixture.round.start();
-    QCOMPARE(fixture.round.remaining(), 30'000ms);
+    QCOMPARE(fixture.round.remaining(), SquareColorRound::kDefaultRoundLength);
 
     fixture.clock.advance(10'000ms);
-    QCOMPARE(fixture.round.remaining(), 20'000ms);
+    QCOMPARE(fixture.round.remaining(), SquareColorRound::kDefaultRoundLength - 10'000ms);
 
     fixture.clock.advance(25'000ms);
     QCOMPARE(fixture.round.remaining(), 0ms);
@@ -77,7 +89,7 @@ void TestRound::tickFinishesTheRoundExactlyOnce()
     Fixture fixture;
     fixture.round.start();
 
-    fixture.clock.advance(29'999ms);
+    fixture.clock.advance(SquareColorRound::kDefaultRoundLength - 1ms);
     QVERIFY(!fixture.round.tick());
     QCOMPARE(fixture.round.state(), RoundState::Running);
 
@@ -142,7 +154,7 @@ void TestRound::answerAfterExpiryIsIgnoredAndRecordsNothing()
     fixture.round.start();
     answerCorrectly(fixture.round);
 
-    fixture.clock.advance(30'000ms);
+    fixture.clock.advance(SquareColorRound::kDefaultRoundLength);
     QCOMPARE(fixture.round.answer(true), AnswerOutcome::Ignored);
 
     QCOMPARE(static_cast<int>(fixture.round.answers().size()), 1);
@@ -174,6 +186,29 @@ void TestRound::abortStopsTheRoundAndKeepsAnswers()
     QCOMPARE(fixture.round.answer(true), AnswerOutcome::Ignored);
     QVERIFY(!fixture.round.tick());
     QCOMPARE(fixture.round.state(), RoundState::Aborted);
+}
+
+void TestRound::abortBeforeStartIsANoOp()
+{
+    // abort() only interrupts a round in progress; there is nothing running
+    // yet to abort, so the round stays Idle rather than becoming Aborted.
+    Fixture fixture;
+    fixture.round.abort();
+    QCOMPARE(fixture.round.state(), RoundState::Idle);
+}
+
+void TestRound::abortAfterFinishIsANoOp()
+{
+    // Likewise, a round that has already finished on its own has nothing left
+    // to abort; Finished stays Finished rather than being overwritten.
+    Fixture fixture;
+    fixture.round.start();
+    fixture.clock.advance(SquareColorRound::kDefaultRoundLength);
+    QVERIFY(fixture.round.tick());
+    QCOMPARE(fixture.round.state(), RoundState::Finished);
+
+    fixture.round.abort();
+    QCOMPARE(fixture.round.state(), RoundState::Finished);
 }
 
 void TestRound::answersCarrySequentialOrdinals()
