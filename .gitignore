@@ -1,0 +1,44 @@
+# Build output
+/build/
+/build-*/
+/cmake-build-*/
+CMakeCache.txt
+CMakeFiles/
+CMakeUserPresets.json
+install_manifest.txt
+compile_commands.json
+.cache/
+
+# Qt / QML tooling
+*.qmlc
+*.jsc
+.qmake.stash
+*.moc
+moc_*.cpp
+qrc_*.cpp
+ui_*.h
+
+# Coverage (gcov / lcov / codecov)
+*.gcno
+*.gcda
+*.gcov
+/coverage/
+coverage.info
+lcov.info
+
+# Test artifacts
+Testing/
+CTestTestfile.cmake
+
+# Local application data written during manual runs
+/.local/
+
+# Brainstorming companion output (design mockups, local only)
+/.superpowers/
+
+# Editor / OS
+.idea/
+.vscode/
+*.swp
+*~
+.DS_Store
