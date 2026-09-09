@@ -26,6 +26,7 @@ include(CTest)
 enable_testing()
 
 add_subdirectory(src/core)
+add_subdirectory(src/store)
 add_subdirectory(tests)
 
 feature_summary(WHAT ALL FATAL_ON_MISSING_REQUIRED_PACKAGES)
