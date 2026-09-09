@@ -12,6 +12,10 @@ qt_add_qml_module(chess-trainer
     QML_FILES
         qml/main.qml
         qml/HomePage.qml
+        qml/DrillPage.qml
+        qml/SummarySheet.qml
+        qml/components/CountdownRing.qml
+        qml/components/AnswerButton.qml
 )
 
 target_link_libraries(chess-trainer PRIVATE
