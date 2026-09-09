@@ -13,6 +13,7 @@
 #include "Database.h"
 #include "ModuleListModel.h"
 #include "RunRepository.h"
+#include "SquareColorController.h"
 
 int main(int argc, char *argv[])
 {
@@ -54,6 +55,8 @@ int main(int argc, char *argv[])
 
     store::RunRepository repository(database);
     app::ModuleListModel moduleList(storageReady ? &repository : nullptr);
+    app::SquareColorController squareColor(storageReady ? &repository : nullptr,
+                                           &moduleList);
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
@@ -63,6 +66,8 @@ int main(int argc, char *argv[])
                                              storageError);
     engine.rootContext()->setContextProperty(QStringLiteral("moduleList"),
                                              &moduleList);
+    engine.rootContext()->setContextProperty(QStringLiteral("squareColor"),
+                                             &squareColor);
 
     // qt_add_qml_module only auto-registers a QML file as a type when its
     // basename starts with an uppercase letter, so main.qml (lowercase, by
