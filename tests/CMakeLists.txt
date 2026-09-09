@@ -3,6 +3,7 @@ set(CORE_TESTS
     square
     promptgenerator
     round
+    roundsummary
     moduleregistry
 )
 
