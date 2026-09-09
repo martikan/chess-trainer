@@ -3,6 +3,7 @@ set(CORE_TESTS
     square
     promptgenerator
     round
+    moduleregistry
 )
 
 foreach(test_name IN LISTS CORE_TESTS)
