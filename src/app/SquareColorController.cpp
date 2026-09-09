@@ -1,6 +1,5 @@
 #include "SquareColorController.h"
 
-#include <chrono>
 #include <cstdint>
 #include <random>
 #include <string>
@@ -79,6 +78,12 @@ int SquareColorController::wrong() const
 
 void SquareColorController::start()
 {
+    // A re-entrant start() must not silently discard an in-flight round:
+    // end and record it first, exactly as a player-initiated abort() would.
+    // abort() is a no-op when nothing is running, so this is safe to call
+    // unconditionally.
+    abort();
+
     m_round = std::make_unique<core::SquareColorRound>(
         m_clock,
         core::PromptGenerator(makeSeed()),
@@ -181,7 +186,14 @@ void SquareColorController::finishRound(bool completed)
         m_moduleList->refresh();
     }
 
+    // promptText() and remainingMs() both change value the instant the round
+    // stops being Running (to "" and to whatever remaining() reports once
+    // finished), on all three paths that reach here: a tick-driven finish, an
+    // abort(), and an Ignored answer. Emitting once here, rather than in each
+    // caller, covers all three.
     Q_EMIT stateChanged();
+    Q_EMIT promptChanged();
+    Q_EMIT remainingChanged();
     Q_EMIT summaryChanged();
     Q_EMIT roundFinished();
 }

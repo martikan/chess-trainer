@@ -1,7 +1,6 @@
 #pragma once
 
 #include <memory>
-#include <optional>
 
 #include <QObject>
 #include <QStringList>
@@ -55,8 +54,11 @@ public:
 
     Q_INVOKABLE void start();
 
-    /// Records an answer. Returns true when it was correct; a rejected answer
-    /// (round over, or not started) returns false and emits nothing.
+    /// Records an answer. Returns true when it was correct. Returns false in
+    /// two distinct cases: not running (nothing emitted), or the clock
+    /// expired between the last tick and this call (routes through
+    /// finishRound(), which emits stateChanged, summaryChanged and
+    /// roundFinished).
     Q_INVOKABLE bool answer(bool dark);
 
     Q_INVOKABLE void abort();
