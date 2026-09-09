@@ -1,6 +1,9 @@
 #include "ModuleListModel.h"
 
+#include <cstddef>
+
 #include <KLocalizedString>
+#include <QDebug>
 
 #include "ModuleRegistry.h"
 #include "RunRepository.h"
@@ -84,6 +87,8 @@ void ModuleListModel::loadStatistics()
         const auto summary = m_repository->moduleSummary(
             QString::fromStdString(row.descriptor.id), &error);
         if (!summary) {
+            qWarning() << "ModuleListModel: moduleSummary query failed for"
+                       << row.descriptor.id.c_str() << ":" << error;
             continue;
         }
         row.bestScore = summary->bestScore.value_or(-1);
