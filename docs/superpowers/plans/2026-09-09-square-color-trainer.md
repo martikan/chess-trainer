@@ -64,7 +64,7 @@ Everything else follows the spec as written.
 - `qml/components/CountdownRing.qml` — canvas ring bound to remaining time.
 - `qml/components/AnswerButton.qml` — non-focusable answer button with tint flash.
 
-**`tests/`** — one QTest executable per core/store unit: `tst_square.cpp`, `tst_promptgenerator.cpp`, `tst_round.cpp`, `tst_database.cpp`, `tst_repository.cpp`, `tst_moduleregistry.cpp`.
+**`tests/`** — one QTest executable per core/store unit: `tst_square.cpp`, `tst_promptgenerator.cpp`, `tst_round.cpp`, `tst_database.cpp`, `tst_repository.cpp`, `tst_moduleregistry.cpp`, `tst_roundsummary.cpp`.
 
 **Repository root** — `CMakeLists.txt`, `.github/workflows/ci.yml`, `.codecov.yml`, `data/` (desktop entry, metainfo, icon).
 
@@ -422,7 +422,6 @@ name: CI
 
 on:
   push:
-    branches: [main]
   pull_request:
 
 jobs:
@@ -519,7 +518,7 @@ Runs in a fedora:43 container so CI and local toolbox builds share one
 dependency set. Coverage is scoped to src/core and src/store: src/app holds
 QObject bridges and QML that are untested by design, and including them would
 make the metric track UI glue instead of logic."
-git push -u origin main
+git push -u origin "$(git branch --show-current)"
 ```
 
 Then:
@@ -529,6 +528,14 @@ gh run watch --repo martikan/chess-trainer
 ```
 
 Expected: `build-and-test` succeeds, `tst_square` passes, coverage uploads. If the push is rejected, the remote is `git@github-personal:martikan/chess-trainer.git` — the bare `github.com` host maps to a read-only account.
+
+The workflow has no `branches` filter on `push`, so it runs for the feature branch this plan is
+executed on and every later task is verified by CI as well as locally. Merging to `main` is not
+this task's job.
+
+If `CODECOV_TOKEN` is not set yet, the `Upload coverage` step fails by design
+(`fail_ci_if_error: true`) while `Configure`/`Build`/`Test` still report their real status. That
+is the intended signal, not a task failure — read the earlier steps for verification and carry on.
 
 ---
 
@@ -3034,7 +3041,7 @@ Expected, verified by eye:
 1. Four cards: Square Color, Coordinates, Knight Path, Board Vision.
 2. Only Square Color is fully opaque and has a Start button. The other three are dimmed and show "Soon".
 3. No statistics line on any card yet, because no round has been completed.
-4. Clicking Start produces a QML error on stderr about `DrillPage.qml` not existing — expected, that page arrives in Task 11.
+4. Clicking Start produces a QML error on stderr about `DrillPage.qml` not existing — expected, that page arrives in Task 12.
 5. Icons render. If any icon is a blank square, the freedesktop name in `ModuleRegistry.cpp` is not in your icon theme; substitute one that is and note the change.
 
 - [ ] **Step 7: Run the test suite**
