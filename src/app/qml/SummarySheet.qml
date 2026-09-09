@@ -51,7 +51,7 @@ Kirigami.Dialog {
                 }
                 Controls.Label {
                     Layout.alignment: Qt.AlignHCenter
-                    text: i18n("correct")
+                    text: i18nc("label under the count of correctly answered squares this round", "correct")
                     opacity: 0.7
                 }
             }
@@ -66,7 +66,7 @@ Kirigami.Dialog {
                 }
                 Controls.Label {
                     Layout.alignment: Qt.AlignHCenter
-                    text: i18n("wrong")
+                    text: i18nc("label under the count of wrongly answered squares this round", "wrong")
                     opacity: 0.7
                 }
             }
@@ -87,7 +87,7 @@ Kirigami.Dialog {
             Controls.Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignRight
-                text: i18nc("percentage", "%1%", squareColor.summaryAccuracyPercent)
+                text: i18nc("the round's accuracy shown as a percentage, e.g. \"83%\"", "%1%", squareColor.summaryAccuracyPercent)
             }
 
             Controls.Label {
@@ -97,7 +97,7 @@ Kirigami.Dialog {
             Controls.Label {
                 Layout.fillWidth: true
                 horizontalAlignment: Text.AlignRight
-                text: i18nc("milliseconds", "%1 ms", squareColor.summaryMeanResponseMs)
+                text: i18nc("the round's mean answer time in milliseconds, e.g. \"850 ms\"", "%1 ms", squareColor.summaryMeanResponseMs)
             }
 
             Controls.Label {
@@ -113,8 +113,10 @@ Kirigami.Dialog {
             }
 
             Controls.Label {
-                // -1 means no completed run has ever been recorded, which
-                // happens when storage is unavailable.
+                // -1 means no completed run has been recorded yet — the
+                // normal state for a player's very first finished round, not
+                // an error. An unreadable store also yields no summary, but
+                // that is a distant second cause, not the typical one.
                 visible: squareColor.bestScore >= 0
                 text: i18n("Best ever")
                 opacity: 0.7
