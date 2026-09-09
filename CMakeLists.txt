@@ -13,12 +13,19 @@ find_package(ECM 6.5 REQUIRED NO_MODULE)
 set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 
 include(KDEInstallDirs)
+include(KDECMakeSettings)
 include(ECMInstallIcons)
 include(FeatureSummary)
 
 find_package(Qt6 6.6 REQUIRED COMPONENTS
     Core Gui Widgets Quick QuickControls2 Sql Test)
 find_package(KF6 6.5 REQUIRED COMPONENTS Kirigami CoreAddons I18n)
+
+# Set as early as possible, per Qt's CMake policy documentation, so it is in
+# effect for every qt_add_qml_module() call in subdirectories added below.
+# QTP0004 makes Qt generate qmldir files for extra directories under a QML
+# module (needed starting with Task 12's src/app/qml/components/).
+qt_policy(SET QTP0004 NEW)
 
 qt_standard_project_setup(REQUIRES 6.6)
 
