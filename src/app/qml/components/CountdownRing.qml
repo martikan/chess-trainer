@@ -6,7 +6,7 @@ Item {
     id: root
 
     property int remainingMs: 0
-    property int totalMs: 30000
+    property int totalMs: 0
 
     readonly property real progress: totalMs > 0
         ? Math.max(0, Math.min(1, remainingMs / totalMs))
