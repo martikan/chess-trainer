@@ -1,6 +1,7 @@
 # One executable per unit under test. Each is registered with CTest.
 set(CORE_TESTS
     square
+    promptgenerator
 )
 
 foreach(test_name IN LISTS CORE_TESTS)
