@@ -2,6 +2,7 @@
 
 #include <memory>
 
+#include <QDateTime>
 #include <QObject>
 #include <QStringList>
 #include <QTimer>
@@ -79,6 +80,11 @@ private:
     core::MonotonicClock m_clock;
     std::unique_ptr<core::SquareColorRound> m_round;
     QTimer m_timer;
+    // Wall-clock time the in-flight round began, captured in start() next to
+    // m_round->start(). finishRound() persists this, never the time it is
+    // called - it may run up to kDefaultRoundLength later, or later still for
+    // an aborted round.
+    QDateTime m_roundStartedAtUtc;
 
     store::RunRepository *m_repository;
     ModuleListModel *m_moduleList;

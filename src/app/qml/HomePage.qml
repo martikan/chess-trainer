@@ -31,12 +31,12 @@ Kirigami.ScrollablePage {
             required property string description
             required property string iconName
             required property string qmlPage
-            required property bool enabled
+            required property bool moduleEnabled
             required property int bestScore
             required property int meanResponseMs
 
             // Disabled modules stay legible but visibly out of reach.
-            opacity: enabled ? 1.0 : 0.45
+            opacity: moduleEnabled ? 1.0 : 0.45
 
             contentItem: RowLayout {
                 spacing: Kirigami.Units.largeSpacing
@@ -67,7 +67,7 @@ Kirigami.ScrollablePage {
 
                     RowLayout {
                         spacing: Kirigami.Units.largeSpacing
-                        visible: enabled
+                        visible: moduleEnabled
 
                         Controls.Button {
                             text: i18n("Start")
@@ -88,7 +88,7 @@ Kirigami.ScrollablePage {
                     }
 
                     Controls.Label {
-                        visible: !enabled
+                        visible: !moduleEnabled
                         text: i18nc("module not implemented yet", "Soon")
                         opacity: 0.7
                     }

@@ -161,11 +161,24 @@ bool Database::applyVersion1(QString *errorOut)
         }
     }
 
+    // The version stamp is set inside the same transaction as the DDL, and
+    // only then committed: SQLite accepts PRAGMA user_version mid-transaction,
+    // so the tables and the version land together, or a failure here rolls
+    // both back. Setting it after the commit would leave a window where the
+    // process could die (or the PRAGMA could fail) with the tables created
+    // but user_version still 0 - the next launch would then re-run this same
+    // DDL against a database that already has it, fail on "table already
+    // exists", and shelve the user's history to a .bak file.
+    if (!setSchemaVersion(1, errorOut)) {
+        database.rollback();
+        return false;
+    }
+
     if (!database.commit()) {
         return fail(errorOut, database.lastError().text());
     }
 
-    return setSchemaVersion(1, errorOut);
+    return true;
 }
 
 QString Database::moveAside(const QString &path, QString *errorOut)

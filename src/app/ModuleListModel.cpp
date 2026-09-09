@@ -70,7 +70,7 @@ QHash<int, QByteArray> ModuleListModel::roleNames() const
         {DescriptionRole, QByteArrayLiteral("description")},
         {IconNameRole, QByteArrayLiteral("iconName")},
         {QmlPageRole, QByteArrayLiteral("qmlPage")},
-        {EnabledRole, QByteArrayLiteral("enabled")},
+        {EnabledRole, QByteArrayLiteral("moduleEnabled")},
         {BestScoreRole, QByteArrayLiteral("bestScore")},
         {MeanResponseMsRole, QByteArrayLiteral("meanResponseMs")},
     };

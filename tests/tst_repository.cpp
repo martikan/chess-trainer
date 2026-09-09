@@ -53,6 +53,7 @@ private slots:
 
     void writeRunReturnsTheNewRunId();
     void writeRunPreservesEveryAnswerField();
+    void writeRunPersistsStartedAtAsUtcIso8601();
     void writeRunRollsBackWhenAnAnswerInsertFails();
     void moduleSummaryIsEmptyOnAFreshDatabase();
     void moduleSummaryReportsBestScoreAndMeanResponseTime();
@@ -121,6 +122,40 @@ void TestRepository::writeRunPreservesEveryAnswerField()
     QVERIFY(!query.next());
 }
 
+void TestRepository::writeRunPersistsStartedAtAsUtcIso8601()
+{
+    auto record = makeRun(1, 0, true, {makeAnswer(1, "e4", true, 500ms)});
+    const QDateTime startedAt(QDate(2026, 3, 4), QTime(8, 30, 15, 250),
+                              QTimeZone::UTC);
+    record.startedAtUtc = startedAt;
+
+    QString error;
+    const auto runId = m_repository->writeRun(record, &error);
+    QVERIFY2(runId.has_value(), qPrintable(error));
+
+    QSqlQuery query(m_database->handle());
+    query.prepare(
+        QStringLiteral("SELECT started_at FROM run WHERE id = ?"));
+    query.addBindValue(*runId);
+    QVERIFY2(query.exec(), qPrintable(query.lastError().text()));
+    QVERIFY(query.next());
+
+    const QString stored = query.value(0).toString();
+
+    // Pins the exact on-disk format, not just the round-tripped value: 'T'
+    // and 'Z' are literal separators, not format specifiers.
+    QCOMPARE(stored, QStringLiteral("2026-03-04T08:30:15.250Z"));
+
+    // fromString() with no 't' specifier in the format returns the parsed
+    // fields tagged as local time; the trailing literal 'Z' in the stored
+    // string is the only marker that they are actually UTC, so the reader
+    // must re-tag them explicitly before comparing.
+    QDateTime readBack = QDateTime::fromString(
+        stored, QStringLiteral("yyyy-MM-dd'T'HH:mm:ss.zzz'Z'"));
+    readBack.setTimeZone(QTimeZone::UTC);
+    QCOMPARE(readBack, startedAt);
+}
+
 void TestRepository::writeRunRollsBackWhenAnAnswerInsertFails()
 {
     // Force the second answer insert to fail so the rollback path is actually
@@ -167,16 +202,18 @@ void TestRepository::moduleSummaryIsEmptyOnAFreshDatabase()
 
 void TestRepository::moduleSummaryReportsBestScoreAndMeanResponseTime()
 {
+    // Deliberately uneven answer counts per run (1 vs. 3): a flat mean over
+    // every answer and a per-run average-of-averages diverge only when the
+    // runs are not the same size, so this is what would catch a regression
+    // to the wrong (per-run) semantics.
     QString error;
     QVERIFY(m_repository->writeRun(
-        makeRun(12, 1, true,
-                {makeAnswer(1, "e4", true, 400ms),
-                 makeAnswer(2, "d5", true, 600ms)}),
-        &error));
+        makeRun(12, 1, true, {makeAnswer(1, "e4", true, 400ms)}), &error));
     QVERIFY(m_repository->writeRun(
         makeRun(26, 2, true,
                 {makeAnswer(1, "a1", true, 800ms),
-                 makeAnswer(2, "h8", false, 1'200ms)}),
+                 makeAnswer(2, "h8", false, 1'200ms),
+                 makeAnswer(3, "b3", true, 1'600ms)}),
         &error));
 
     const auto summary =
@@ -184,9 +221,10 @@ void TestRepository::moduleSummaryReportsBestScoreAndMeanResponseTime()
     QVERIFY2(summary.has_value(), qPrintable(error));
 
     QCOMPARE(*summary->bestScore, 26);
-    // Mean over every answer in completed runs, correct and wrong alike:
-    // (400 + 600 + 800 + 1200) / 4
-    QCOMPARE(*summary->meanResponseMs, 750);
+    // Flat mean over every answer in completed runs, correct and wrong
+    // alike: (400 + 800 + 1200 + 1600) / 4 = 1000. The wrong, per-run
+    // average-of-averages would instead report (400 + 1200) / 2 = 800.
+    QCOMPARE(*summary->meanResponseMs, 1'000);
 }
 
 void TestRepository::moduleSummaryIgnoresAbortedRuns()

@@ -10,7 +10,7 @@ namespace store {
 
 namespace {
 
-const QString kIsoFormat = QStringLiteral("yyyy-MM-ddTHH:mm:ss.zzzZ");
+const QString kIsoFormat = QStringLiteral("yyyy-MM-dd'T'HH:mm:ss.zzz'Z'");
 
 } // namespace
 

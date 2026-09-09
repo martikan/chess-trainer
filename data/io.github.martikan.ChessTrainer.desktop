@@ -9,4 +9,3 @@ Terminal=false
 Categories=Game;BoardGame;Education;
 Keywords=chess;board;vision;training;squares;coordinates;
 StartupNotify=true
-StartupWMClass=chess-trainer

@@ -89,6 +89,9 @@ void SquareColorController::start()
         core::PromptGenerator(makeSeed()),
         core::SquareColorRound::kDefaultRoundLength);
     m_round->start();
+    // Captured after abort() has already persisted the previous round (if
+    // any) with its own, earlier timestamp - see finishRound().
+    m_roundStartedAtUtc = QDateTime::currentDateTimeUtc();
     m_timer.start();
 
     Q_EMIT stateChanged();
@@ -160,7 +163,7 @@ void SquareColorController::finishRound(bool completed)
         store::RunRecord record;
         record.moduleId = QString::fromStdString(
             std::string(core::kSquareColorModuleId));
-        record.startedAtUtc = QDateTime::currentDateTimeUtc();
+        record.startedAtUtc = m_roundStartedAtUtc;
         record.roundLengthMs = static_cast<int>(m_round->roundLength().count());
         record.correct = summary.correct;
         record.wrong = summary.wrong;
