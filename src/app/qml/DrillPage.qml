@@ -123,7 +123,6 @@ Kirigami.Page {
             AnswerButton {
                 id: lightButton
                 Layout.fillWidth: true
-                primary: true
                 text: i18nc("light coloured square", "Light")
                 shortcutHint: i18nc("keyboard shortcuts", "← / L")
                 onClicked: page.submit(false)
