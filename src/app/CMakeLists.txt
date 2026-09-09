@@ -1,5 +1,7 @@
 qt_add_executable(chess-trainer
     main.cpp
+    ModuleListModel.h
+    ModuleListModel.cpp
 )
 
 qt_add_qml_module(chess-trainer

@@ -34,5 +34,7 @@ Kirigami.ApplicationWindow {
         Kirigami.AboutPage {}
     }
 
-    pageStack.initialPage: HomePage {}
+    pageStack.initialPage: HomePage {
+        onModuleRequested: (qmlPage) => root.pageStack.push(qmlPage)
+    }
 }

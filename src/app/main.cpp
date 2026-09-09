@@ -11,6 +11,7 @@
 #include <KLocalizedString>
 
 #include "Database.h"
+#include "ModuleListModel.h"
 #include "RunRepository.h"
 
 int main(int argc, char *argv[])
@@ -52,6 +53,7 @@ int main(int argc, char *argv[])
         && database.migrate(&storageError);
 
     store::RunRepository repository(database);
+    app::ModuleListModel moduleList(storageReady ? &repository : nullptr);
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
@@ -59,6 +61,8 @@ int main(int argc, char *argv[])
                                              storageReady);
     engine.rootContext()->setContextProperty(QStringLiteral("storageError"),
                                              storageError);
+    engine.rootContext()->setContextProperty(QStringLiteral("moduleList"),
+                                             &moduleList);
 
     // qt_add_qml_module only auto-registers a QML file as a type when its
     // basename starts with an uppercase letter, so main.qml (lowercase, by
