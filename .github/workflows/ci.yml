@@ -1,0 +1,53 @@
+name: CI
+
+on:
+  push:
+  pull_request:
+
+jobs:
+  build-and-test:
+    runs-on: ubuntu-latest
+    container: fedora:43
+
+    steps:
+      - name: Install dependencies
+        run: |
+          dnf install -y --setopt=install_weak_deps=False \
+            cmake ninja-build gcc-c++ git lcov \
+            extra-cmake-modules \
+            qt6-qtbase-devel qt6-qtdeclarative-devel \
+            kf6-kirigami-devel kf6-qqc2-desktop-style \
+            kf6-kcoreaddons-devel kf6-ki18n-devel
+
+      - uses: actions/checkout@v4
+
+      - name: Configure
+        run: |
+          cmake -B build -G Ninja \
+            -DCMAKE_BUILD_TYPE=Debug \
+            -DBUILD_TESTING=ON \
+            -DCMAKE_CXX_FLAGS="--coverage -O0 -g" \
+            -DCMAKE_EXE_LINKER_FLAGS="--coverage"
+
+      - name: Build
+        run: cmake --build build
+
+      - name: Test
+        run: ctest --test-dir build --output-on-failure
+
+      - name: Collect coverage
+        run: |
+          lcov --directory build --capture --output-file coverage.info \
+            --ignore-errors mismatch,gcov,empty
+          lcov --remove coverage.info \
+            '/usr/*' '*/tests/*' '*/src/app/*' '*/build/*' \
+            --output-file coverage.info \
+            --ignore-errors unused
+          lcov --list coverage.info
+
+      - name: Upload coverage
+        uses: codecov/codecov-action@v5
+        with:
+          files: coverage.info
+          token: ${{ secrets.CODECOV_TOKEN }}
+          fail_ci_if_error: true
