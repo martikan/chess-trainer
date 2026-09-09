@@ -1,0 +1,11 @@
+[Desktop Entry]
+Type=Application
+Name=Chess Trainer
+GenericName=Chess Board Vision Trainer
+Comment=Train your chess board vision
+Exec=chess-trainer
+Icon=io.github.martikan.ChessTrainer
+Terminal=false
+Categories=Game;BoardGame;Education;
+Keywords=chess;board;vision;training;squares;coordinates;
+StartupNotify=true

@@ -1,0 +1,54 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<component type="desktop-application">
+  <id>io.github.martikan.ChessTrainer</id>
+
+  <name>Chess Trainer</name>
+  <summary>Train your chess board vision</summary>
+
+  <metadata_license>CC0-1.0</metadata_license>
+  <project_license>MIT</project_license>
+
+  <developer id="io.github.martikan">
+    <name>Richard Martikan</name>
+  </developer>
+
+  <description>
+    <p>
+      Chess Trainer drills the board skills that strong players take for
+      granted, one exercise at a time.
+    </p>
+    <p>
+      The Square Color module names a square and asks whether it is light or
+      dark, as fast as you can answer, for thirty seconds. Every answer is
+      timed, so you can see not just whether you were right but which squares
+      still make you hesitate.
+    </p>
+  </description>
+
+  <launchable type="desktop-id">io.github.martikan.ChessTrainer.desktop</launchable>
+
+  <url type="homepage">https://github.com/martikan/chess-trainer</url>
+  <url type="bugtracker">https://github.com/martikan/chess-trainer/issues</url>
+  <url type="vcs-browser">https://github.com/martikan/chess-trainer</url>
+
+  <categories>
+    <category>Game</category>
+    <category>BoardGame</category>
+    <category>Education</category>
+  </categories>
+
+  <supports>
+    <control>keyboard</control>
+    <control>pointing</control>
+  </supports>
+
+  <content_rating type="oars-1.1"/>
+
+  <releases>
+    <release version="0.1.0" date="2026-09-09">
+      <description>
+        <p>First release, with the Square Color training module.</p>
+      </description>
+    </release>
+  </releases>
+</component>

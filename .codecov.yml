@@ -1,0 +1,16 @@
+coverage:
+  status:
+    project:
+      default:
+        target: auto
+        threshold: 1%
+    patch: off
+
+ignore:
+  - "src/app/**"      # QObject bridges and QML — untested by design, spec 8
+  - "tests/**"
+  - "build/**"
+
+comment:
+  layout: "reach, diff, files"
+  require_changes: true
