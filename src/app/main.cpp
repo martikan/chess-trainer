@@ -45,10 +45,18 @@ int main(int argc, char *argv[])
     // donation and Get Involved links from a non-KDE application.
     about.setDesktopFileName(
         QStringLiteral("io.github.martikan.ChessTrainer"));
+
+    // The theme entry only exists once the icons in data/ are installed, so an
+    // uninstalled build has nothing to look up. Fall back to the copy embedded
+    // in the binary rather than showing a missing-icon placeholder.
+    const QIcon applicationIcon = QIcon::fromTheme(
+        QStringLiteral("io.github.martikan.ChessTrainer"),
+        QIcon(QStringLiteral(
+            ":/icons/hicolor/128x128/apps/io.github.martikan.ChessTrainer.png")));
+    about.setProgramLogo(applicationIcon);
     KAboutData::setApplicationData(about);
 
-    QApplication::setWindowIcon(
-        QIcon::fromTheme(QStringLiteral("io.github.martikan.ChessTrainer")));
+    QApplication::setWindowIcon(applicationIcon);
 
     // Storage failure must never block training, so an error here is carried
     // into the UI as a message rather than aborting startup. A broken

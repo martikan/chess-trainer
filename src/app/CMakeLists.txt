@@ -18,6 +18,15 @@ qt_add_qml_module(chess-trainer
         qml/components/AnswerButton.qml
 )
 
+# The application icon is embedded as well as installed: an uninstalled build
+# has no icon theme entry to look up, and the About page and window icon would
+# fall back to a "missing icon" placeholder. One size is enough as a fallback,
+# since the installed theme entry wins whenever it is present.
+qt_add_resources(chess-trainer "appicon"
+    PREFIX "/"
+    BASE ${CMAKE_SOURCE_DIR}/data
+    FILES ${CMAKE_SOURCE_DIR}/data/icons/hicolor/128x128/apps/io.github.martikan.ChessTrainer.png)
+
 # chess-trainer-version.h is generated into the top-level build directory.
 target_include_directories(chess-trainer PRIVATE ${CMAKE_BINARY_DIR})
 
