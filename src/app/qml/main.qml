@@ -31,7 +31,11 @@ Kirigami.ApplicationWindow {
 
     Component {
         id: aboutPage
-        Kirigami.AboutPage {}
+        // Report a bug also opens bugs.kde.org: Kirigami 6.29's AboutItem
+        // misses a return after opening a non-KDE bug address. Upstream bug.
+        Kirigami.AboutPage {
+            aboutData: applicationAboutData
+        }
     }
 
     pageStack.initialPage: HomePage {

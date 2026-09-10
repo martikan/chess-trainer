@@ -5,6 +5,7 @@
 #include <QQuickStyle>
 #include <QStandardPaths>
 #include <QUrl>
+#include <QVariant>
 
 #include <KAboutData>
 #include <KLocalizedContext>
@@ -64,6 +65,13 @@ int main(int argc, char *argv[])
 
     QQmlApplicationEngine engine;
     engine.rootContext()->setContextObject(new KLocalizedContext(&engine));
+    // KF6 exposes no AboutData QML singleton, so the KAboutData gadget has to
+    // be handed to QML by hand. Named applicationAboutData rather than
+    // aboutData: the latter would resolve to AboutPage's own property and
+    // self-bind.
+    engine.rootContext()->setContextProperty(
+        QStringLiteral("applicationAboutData"),
+        QVariant::fromValue(about));
     engine.rootContext()->setContextProperty(QStringLiteral("storageReady"),
                                              storageReady);
     engine.rootContext()->setContextProperty(
