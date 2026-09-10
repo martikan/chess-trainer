@@ -18,6 +18,9 @@ qt_add_qml_module(chess-trainer
         qml/components/AnswerButton.qml
 )
 
+# chess-trainer-version.h is generated into the top-level build directory.
+target_include_directories(chess-trainer PRIVATE ${CMAKE_BINARY_DIR})
+
 target_link_libraries(chess-trainer PRIVATE
     Qt6::Core
     Qt6::Gui

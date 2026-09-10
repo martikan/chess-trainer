@@ -10,6 +10,8 @@
 #include <KLocalizedContext>
 #include <KLocalizedString>
 
+#include "chess-trainer-version.h"
+
 #include "Database.h"
 #include "ModuleListModel.h"
 #include "RunRepository.h"
@@ -27,7 +29,7 @@ int main(int argc, char *argv[])
 
     KAboutData about(QStringLiteral("io.github.martikan.ChessTrainer"),
                      i18n("Chess Trainer"),
-                     QStringLiteral("0.1.0"),
+                     QStringLiteral(CHESSTRAINER_VERSION_STRING),
                      i18n("Train your chess board vision"),
                      KAboutLicense::MIT,
                      i18n("© 2026 Richard Martikan"));

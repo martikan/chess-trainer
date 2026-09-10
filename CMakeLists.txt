@@ -15,7 +15,15 @@ set(CMAKE_MODULE_PATH ${ECM_MODULE_PATH})
 include(KDEInstallDirs)
 include(KDECMakeSettings)
 include(ECMInstallIcons)
+include(ECMSetupVersion)
 include(FeatureSummary)
+
+# The About page shows the version, so it must not be able to drift from the
+# one CMake already knows. Generate a header instead of repeating the literal
+# in main.cpp.
+ecm_setup_version(${PROJECT_VERSION}
+    VARIABLE_PREFIX CHESSTRAINER
+    VERSION_HEADER "${CMAKE_BINARY_DIR}/chess-trainer-version.h")
 
 find_package(Qt6 6.6 REQUIRED COMPONENTS
     Core Gui Widgets Quick QuickControls2 Sql Test)
