@@ -40,6 +40,11 @@ int main(int argc, char *argv[])
     about.setHomepage(QStringLiteral("https://github.com/martikan/chess-trainer"));
     about.setBugAddress(
         QByteArrayLiteral("https://github.com/martikan/chess-trainer/issues"));
+    // KAboutData otherwise prefixes the component name with "org.kde.", which
+    // no longer names the installed desktop file and makes Kirigami offer KDE
+    // donation and Get Involved links from a non-KDE application.
+    about.setDesktopFileName(
+        QStringLiteral("io.github.martikan.ChessTrainer"));
     KAboutData::setApplicationData(about);
 
     QApplication::setWindowIcon(
